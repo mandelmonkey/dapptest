@@ -1,0 +1,21 @@
+{
+  "name": "web3indie",
+  "version": "1.0.0",
+  "description": "web3 custom provider and module for dAPP browser",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "na"
+  },
+  "author": "Christian J Moss",
+  "license": "MIT",
+  "dependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "web3": "0.20.2",
+    "web3-provider-engine": "^13.6.0"
+  }
+}

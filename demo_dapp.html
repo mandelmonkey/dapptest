@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+ 
+<html>
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+<body>
+
+<div class="container">
+<h1>Test dAPP</h1> 
+
+ <div class="form-group">
+<!--
+<div class="form-check">
+    <label class="form-check-label">
+      <input type="checkbox" class="form-check-input" id="testnet" checked>
+      Use Ropsten testnet
+    </label>
+  </div>-->
+
+ </div>
+  <form >
+    <div class="form-group">
+      <label for="email">1.Calls web3.getaccounts and gets current account from native app</label>
+    </div>
+     <button type="button" class="btn btn-primary" onclick="getAccounts()">unlock account</button>
+     <br><br>
+     <p id="account"> </p>
+<br> 
+     <div class="form-group">
+      <label for="email">2.Gets the current ether balance for the unlocked address</label>
+    </div>
+     <button type="button" class="btn btn-primary" onclick="getBalances()">get balances</button>
+     <br><br>
+     <p id="balance" > </p>
+ 
+<br> 
+
+ 
+  <div class="form-group mx-sm-3">
+    <label>3.Sign an entered message via the native app</label>
+    <input type="text" class="form-control" id="messageToSign" placeholder="enter a message">
+  </div>
+  <button type="button" class="btn btn-primary" onclick="signMessage()">Sign message</button>
+ <br><br>
+<p id="signature" style=" word-break: break-all;
+    white-space: normal;"> </p>
+<br>
+<div class="form-group mx-sm-3">
+    <label>4.Sign a transaction sending ether to an address</label>
+    <label for="inputPassword2" class="sr-only">Password</label>
+    <input type="text" class="form-control" id="toAddressEther" placeholder="to address">
+    <input type="number" class="form-control" id="amountEther" placeholder="e.g. 1">
+  </div>
+  <button  type="button"  class="btn btn-primary" onclick="signTransaction()">Sign transaction</button>
+    <br><br>
+   <p id="signatureTx" style=" word-break: break-all;
+    white-space: normal;"> </p>
+<br>
+  <div class="form-group mx-sm-3">
+    <label>4.Sign a transaction sending a token to an address</label>
+    <label for="inputPassword2" class="sr-only">Password</label>
+    <input type="text" class="form-control" id="toAddressToken" placeholder="to address">
+    <input type="text" class="form-control" id="tokenContractAddress" placeholder="token contract address">
+    <input type="number" class="form-control" id="amountToken" placeholder="e.g. 1">
+  </div>
+
+  <button  type="button"  class="btn btn-primary" onclick="signTokenTransaction()">Sign token transaction</button>
+    <br><br>
+   <p id="signatureTxToken" style=" word-break: break-all;
+    white-space: normal;"> </p>
+    <br>
+  </form>
+</div> 
+<script>
+
+  var chainId = 0x03;//0x01; //main
+var currentAccount = null;
+
+function getAccounts() {
+     try{
+       document.getElementById("account").innerHTML = "please wait...";
+    web3.eth.getAccounts((err, acc) => {
+    if(err != null){
+document.getElementById("account").innerHTML = "error:"+err;
+    }else{
+   currentAccount = acc[0];
+    document.getElementById("account").innerHTML =  currentAccount
+  }
+});
+
+
+
+  }
+  catch(e){
+    alert(e);
+  }
+}
+
+function getBalances() {
+ if(currentAccount != null){
+  document.getElementById("balance").innerHTML = "please wait...";
+web3.eth.getBalance(currentAccount, function (error, result) {
+		 
+    if (!error) {
+   
+    document.getElementById("balance").innerHTML = result.toString();
+    } else {
+     document.getElementById("balance").innerHTML = "error:"+err;
+    }
+  });
+}
+else{
+alert("Please unlock account first");
+}
+}
+
+function signMessage() {
+    
+   if(currentAccount != null){
+     document.getElementById("signature").innerHTML = "please wait...";
+    try{
+
+ var msg = document.getElementById("messageToSign").value;
+ 
+ if(msg == undefined || msg == ""){
+  alert("please enter a message" );
+  return;
+ }
+
+  var from = currentAccount
+  web3.eth.sign(from, msg, function (err, result) {
+    if(err != undefined){
+      document.getElementById("signature").innerHTML = "error:"+err;
+    }else{
+       
+       document.getElementById("signature").innerHTML = result;
+    }
+   
+  })
+
+}
+catch(e){
+  alert("s"+e);
+}
+ }
+ else{
+ alert("Please unlock account first");
+ }
+}
+
+function signTokenTransaction() {
+
+ 
+   if(currentAccount != null){
+document.getElementById("signatureTxToken").innerHTML = "please wait...";
+//"0x16384087512719153675825f591ad5f6fc3429d4";
+
+    var destAddress = document.getElementById("toAddressToken").value;
+ if(destAddress == undefined || destAddress == ""){
+  alert("please enter a destination address");
+  return;
+ }
+
+    var amountToken = document.getElementById("amountToken").value;
+ if(amountToken == undefined || amountToken == ""){
+  alert("please enter an amount");
+  return;
+ }
+
+
+  //"0xab95e915c123fded5bdfb6325e35ef5515f1ea69"; //for xenon
+
+    var contractAddress = document.getElementById("tokenContractAddress").value;
+ if(contractAddress == undefined || contractAddress == ""){
+  alert("please enter a contract address");
+  return;
+ }
+
+ 
+  
+    try{
+
+ 
+var count = web3.eth.getTransactionCount(currentAccount, function (err, count) {
+ 
+    if(err != undefined){
+
+      alert(err);
+
+    }else{
+       try{
+    
+     var abiArray = humanReadableAbi;
+  
+    var contract = web3.eth.contract(abiArray).at(contractAddress);
+ 
+    var tokenSendAmount = parseFloat(amountToken) * Math.pow(10, 18); //xenon has 18 decimals
+
+    var data = contract.transfer.getData(destAddress, tokenSendAmount, {from: currentAccount});
+    var rawTransaction = {
+    from: currentAccount,
+    nonce: web3.toHex(count),
+    gasPrice: "0x04e3b29200",
+    gasLimit: "0x7458",
+    to: contractAddress,
+    value: "0x0",
+    data: data,
+    chainId: chainId //main
+   };
+ 
+  web3.eth.signTransaction(rawTransaction, function (err, result) {
+
+    if(err != undefined){
+
+      document.getElementById("signatureTxToken").innerHTML = "error:"+err;
+
+    }else{
+       
+      document.getElementById("signatureTxToken").innerHTML =  result.raw;
+    
+    }
+   
+  })
+
+
+
+  }
+  catch(e){
+    alert(e);
+  }
+    }
+   
+  });
+ 
+
+}
+catch(e){
+  alert("error:"+e);
+}
+ }
+ else{
+ alert("Please unlock account first");
+ }
+}
+
+
+function signTransaction() {
+    
+   if(currentAccount != null){
+document.getElementById("signatureTx").innerHTML = "please wait...";
+    var destAddress = document.getElementById("toAddressEther").value;
+ if(destAddress == undefined || destAddress  == ""){
+  alert("please enter a destination address");
+  return;
+ }
+
+    var amountEther = document.getElementById("amountEther").value;
+ if(amountEther == undefined || amountEther  == ""){
+  alert("please enter an amount");
+  return;
+ }
+
+    try{
+
+     var txparams = {
+    from:  currentAccount,
+    gasPrice: "20000000000",
+    gas: "21000",
+    to: destAddress,
+    value: parseFloat(amountEther)  * Math.pow(10, 18),
+    data: "",
+    chainId: chainId //main
+    }
+
+
+ 
+  
+  web3.eth.signTransaction(txparams, function (err, result) {
+
+    if(err != undefined){
+
+      document.getElementById("signatureTx").innerHTML = "error:"+err;
+
+    }else{
+       
+      document.getElementById("signatureTx").innerHTML =  result.raw;
+    
+    }
+   
+  })
+
+}
+catch(e){
+  alert("error:"+e);
+}
+ }
+ else{
+ alert("Please unlock account first");
+ }
+}
+
+var humanReadableAbi = [
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "name",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "approve",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "totalSupply",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transferFrom",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "decimals",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "version",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "name": "balance",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "transfer",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "name": "_value",
+        "type": "uint256"
+      },
+      {
+        "name": "_extraData",
+        "type": "bytes"
+      }
+    ],
+    "name": "approveAndCall",
+    "outputs": [
+      {
+        "name": "success",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "name": "_spender",
+        "type": "address"
+      }
+    ],
+    "name": "allowance",
+    "outputs": [
+      {
+        "name": "remaining",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_initialAmount",
+        "type": "uint256"
+      },
+      {
+        "name": "_tokenName",
+        "type": "string"
+      },
+      {
+        "name": "_decimalUnits",
+        "type": "uint8"
+      },
+      {
+        "name": "_tokenSymbol",
+        "type": "string"
+      }
+    ],
+    "type": "constructor"
+  },
+  {
+    "payable": false,
+    "type": "fallback"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Transfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_owner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "_spender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "Approval",
+    "type": "event"
+  },
+];
+</script>
+  <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+
+</body>
+ 
+</html>

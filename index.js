@@ -12,8 +12,7 @@ CURRENT_TASK = null;
 
 CURRENT_CALLBACK = null;
 
-CLEAR_TASK = function(){
-alert("clear");
+CLEAR_TASK = function(){ 
  CURRENT_TASK = null;
 }
 CLEAR_CALLBACK = function(error){

@@ -126,14 +126,7 @@ engine.addProvider(new RpcSubprovider({
   rpcUrl: 'https://mainnet.infura.io/tpmEK4A0oewQTq68OdBMs',
 }))
 
-// log new blocks
-engine.on('block', function(block){
- // alert("new block");
-  console.log('================================')
-  console.log('BLOCK CHANGED:', '#'+block.number.toString('hex'), '0x'+block.hash.toString('hex'))
-  console.log('================================')
-
-})
+ 
 
 // network connectivity error
 engine.on('error', function(err){
